@@ -9,10 +9,12 @@
     "start": "npm run build && node dist/server.js --ignore client",
     "dev": "npx nodemon",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "node dist/seeds/index.js"
+    "seed": "node dist/seeds/user-seeds.js && node dist/seeds/ticket-seeds.js"
   },
   "nodemonConfig": {
-    "watch": ["src"],
+    "watch": [
+      "src"
+    ],
     "ext": "ts,json,js",
     "exec": "npx tsc && node dist/server.js"
   },
@@ -24,9 +26,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.5",
-    "sequelize": "^6.37.3"
+    "mongoose": "^8.8.4"
   },
+
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.21",

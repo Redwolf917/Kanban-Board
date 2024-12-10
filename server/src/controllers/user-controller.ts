@@ -1,77 +1,84 @@
 import { Request, Response } from 'express';
 import { User } from '../models/user.js';
 
-// GET /Users
-export const getAllUsers = async (_req: Request, res: Response) => {
+export const getAllUsers = async (_: Request, res: Response): Promise<void> => {
   try {
-    const users = await User.findAll({
-      attributes: { exclude: ['password'] }
-    });
+    const users = await User.find({}, '-password'); // Exclude passwords
     res.json(users);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// GET /Users/:id
-export const getUserById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const user = await User.findByPk(id, {
-      attributes: { exclude: ['password'] }
-    });
-    if (user) {
-      res.json(user);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(500).json({ message: 'An unexpected error occurred' });
     }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
   }
 };
 
-// POST /Users
-export const createUser = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+export const getUserById = async (req: Request, res: Response): Promise<void> => {
   try {
+    const user = await User.findById(req.params.id, '-password');
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    res.json(user);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+  }
+};
+
+export const createUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, password } = req.body;
     const newUser = await User.create({ username, password });
     res.status(201).json(newUser);
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({ message: error.message });
+    } else {
+      res.status(400).json({ message: 'An unexpected error occurred' });
+    }
   }
 };
 
-// PUT /Users/:id
-export const updateUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { username, password } = req.body;
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findByPk(id);
-    if (user) {
-      user.username = username;
-      user.password = password;
-      await user.save();
-      res.json(user);
-    } else {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
       res.status(404).json({ message: 'User not found' });
+      return;
     }
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    res.json({ message: 'User deleted' });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unexpected error occurred' });
+    }
   }
 };
 
-// DELETE /Users/:id
-export const deleteUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findByPk(id);
-    if (user) {
-      await user.destroy();
-      res.json({ message: 'User deleted' });
-    } else {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(id, updatedData, { new: true });
+    if (!updatedUser) {
       res.status(404).json({ message: 'User not found' });
+      return;
     }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+
+    res.json(updatedUser);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unexpected error occurred' });
+    }
   }
 };

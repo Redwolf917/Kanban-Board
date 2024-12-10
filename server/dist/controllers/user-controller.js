@@ -1,79 +1,66 @@
 import { User } from '../models/user.js';
-// GET /Users
-export const getAllUsers = async (_req, res) => {
+export const getAllUsers = async (_, res) => {
     try {
-        const users = await User.findAll({
-            attributes: { exclude: ['password'] }
-        });
+        const users = await User.find({}, '-password'); // Exclude passwords
         res.json(users);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-// GET /Users/:id
-export const getUserById = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const user = await User.findByPk(id, {
-            attributes: { exclude: ['password'] }
-        });
-        if (user) {
-            res.json(user);
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
         }
         else {
-            res.status(404).json({ message: 'User not found' });
+            res.status(500).json({ message: 'An unexpected error occurred' });
         }
     }
+};
+export const getUserById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id, '-password');
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+        res.json(user);
+    }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: 'An unexpected error occurred' });
+        }
     }
 };
-// POST /Users
 export const createUser = async (req, res) => {
-    const { username, password } = req.body;
     try {
+        const { username, password } = req.body;
         const newUser = await User.create({ username, password });
         res.status(201).json(newUser);
     }
     catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-};
-// PUT /Users/:id
-export const updateUser = async (req, res) => {
-    const { id } = req.params;
-    const { username, password } = req.body;
-    try {
-        const user = await User.findByPk(id);
-        if (user) {
-            user.username = username;
-            user.password = password;
-            await user.save();
-            res.json(user);
+        if (error instanceof Error) {
+            res.status(400).json({ message: error.message });
         }
         else {
-            res.status(404).json({ message: 'User not found' });
+            res.status(400).json({ message: 'An unexpected error occurred' });
         }
     }
-    catch (error) {
-        res.status(400).json({ message: error.message });
-    }
 };
-// DELETE /Users/:id
 export const deleteUser = async (req, res) => {
-    const { id } = req.params;
     try {
-        const user = await User.findByPk(id);
-        if (user) {
-            await user.destroy();
-            res.json({ message: 'User deleted' });
-        }
-        else {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) {
             res.status(404).json({ message: 'User not found' });
+            return;
         }
+        res.json({ message: 'User deleted' });
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: 'An unexpected error occurred' });
+        }
     }
 };
