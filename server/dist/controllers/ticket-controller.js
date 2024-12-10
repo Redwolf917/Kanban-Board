@@ -1,5 +1,6 @@
 import { Ticket } from '../models/ticket.js';
-export const getAllTickets = async (_, res) => {
+// Get all tickets
+export const getAllTickets = async (_req, res) => {
     try {
         const tickets = await Ticket.find().populate('assignedUserId', 'username');
         res.json(tickets);
@@ -13,6 +14,7 @@ export const getAllTickets = async (_, res) => {
         }
     }
 };
+// Get a ticket by ID
 export const getTicketById = async (req, res) => {
     try {
         const ticket = await Ticket.findById(req.params.id).populate('assignedUserId', 'username');
@@ -31,21 +33,56 @@ export const getTicketById = async (req, res) => {
         }
     }
 };
+// Create a ticket
 export const createTicket = async (req, res) => {
     try {
         const { name, status, description, assignedUserId } = req.body;
-        const newTicket = await Ticket.create({ name, status, description, assignedUserId });
+        // Validate required fields
+        if (!name || !status || !description || !assignedUserId) {
+            res.status(400).json({
+                message: `Missing fields: ${!name ? 'name ' : ''}${!status ? 'status ' : ''}${!description ? 'description ' : ''}${!assignedUserId ? 'assignedUserId' : ''}`.trim(),
+            });
+            return;
+        }
+        const newTicket = await Ticket.create({
+            name,
+            status,
+            description,
+            assignedUserId,
+        });
         res.status(201).json(newTicket);
     }
     catch (error) {
         if (error instanceof Error) {
-            res.status(400).json({ message: error.message });
+            res.status(500).json({ message: error.message });
         }
         else {
-            res.status(400).json({ message: 'An unexpected error occurred' });
+            res.status(500).json({ message: 'An unexpected error occurred' });
         }
     }
 };
+// Update a ticket
+export const updateTicket = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = req.body;
+        const updatedTicket = await Ticket.findByIdAndUpdate(id, updatedData, { new: true });
+        if (!updatedTicket) {
+            res.status(404).json({ message: 'Ticket not found' });
+            return;
+        }
+        res.json(updatedTicket);
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: 'An unexpected error occurred' });
+        }
+    }
+};
+// Delete a ticket
 export const deleteTicket = async (req, res) => {
     try {
         const ticket = await Ticket.findByIdAndDelete(req.params.id);

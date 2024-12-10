@@ -1,14 +1,10 @@
-import express from 'express';
-import { getAllTickets, getTicketById, createTicket, updateTicket, deleteTicket, } from '../../controllers/ticket-controller.js';
-const router = express.Router();
-// GET /tickets - Get all tickets
-router.get('/', getAllTickets);
-// GET /tickets/:id - Get a ticket by id
-router.get('/:id', getTicketById);
-// POST /tickets - Create a new ticket
-router.post('/', createTicket);
-// PUT /tickets/:id - Update a ticket by id
-router.put('/:id', updateTicket);
-// DELETE /tickets/:id - Delete a ticket by id
-router.delete('/:id', deleteTicket);
-export { router as ticketRouter };
+import { Router } from 'express';
+import { getAllTickets, getTicketById, createTicket, deleteTicket, updateTicket, } from '../../controllers/ticket-controller.js';
+const ticketRouter = Router();
+// Define ticket routes
+ticketRouter.get('/', getAllTickets); // Get all tickets
+ticketRouter.get('/:id', getTicketById); // Get a ticket by ID
+ticketRouter.post('/', createTicket); // Create a new ticket
+ticketRouter.put('/:id', updateTicket); // Update an existing ticket
+ticketRouter.delete('/:id', deleteTicket); // Delete a ticket
+export { ticketRouter };

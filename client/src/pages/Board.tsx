@@ -1,11 +1,9 @@
 import { useEffect, useState, useLayoutEffect } from 'react';
-
 import { retrieveTickets, deleteTicket } from '../api/ticketAPI';
 import ErrorPage from './ErrorPage';
 import Swimlane from '../components/Swimlane';
 import { TicketData } from '../interfaces/TicketData';
 import { ApiMessage } from '../interfaces/ApiMessage';
-
 import auth from '../utils/auth';
 
 const boardStates = ['Todo', 'In Progress', 'Done'];
@@ -34,12 +32,12 @@ const Board = () => {
   const deleteIndvTicket = async (ticketId: number) : Promise<ApiMessage> => {
     try {
       const data = await deleteTicket(ticketId);
-      fetchTickets();
+      setTickets(tickets.filter(ticket => ticket.id !== ticketId)); // Update tickets after delete
       return data;
     } catch (err) {
       return Promise.reject(err);
     }
-  }
+  };
 
   useLayoutEffect(() => {
     checkLogin();
@@ -57,31 +55,29 @@ const Board = () => {
 
   return (
     <>
-    {
-      !loginCheck ? (
-        <div className='login-notice'>
-          <h1>
-            Login to create & view tickets
-          </h1>
-        </div>  
-      ) : (
+      {
+        !loginCheck ? (
+          <div className='login-notice'>
+            <h1>Login to create & view tickets</h1>
+          </div>  
+        ) : (
           <div className='board'>
             <div className='board-display'>
               {boardStates.map((status) => {
                 const filteredTickets = tickets.filter(ticket => ticket.status === status);
                 return (
                   <Swimlane 
+                    key={status} // Key is based on the status
                     title={status} 
-                    key={status} 
                     tickets={filteredTickets} 
-                    deleteTicket={deleteIndvTicket}
+                    deleteTicket={deleteIndvTicket} // Pass the delete function to Swimlane
                   />
                 );
               })}
             </div>
           </div>
         )
-    }
+      }
     </>
   );
 };

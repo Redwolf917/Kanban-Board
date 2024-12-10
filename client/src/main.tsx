@@ -1,41 +1,25 @@
-import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import './index.css';
+import ReactDOM from 'react-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import App from './App';
+import Board from './pages/Board';
+import CreateTicket from './pages/CreateTicket';
+import EditTicket from './pages/EditTicket';
+import Login from './pages/Login';
+import ErrorPage from './pages/ErrorPage';
+import './index.css'; 
 
-import App from './App.tsx';
-import Board from './pages/Board.tsx';
-import ErrorPage from './pages/ErrorPage.tsx';
-import EditTicket from './pages/EditTicket.tsx';
-import CreateTicket from './pages/CreateTicket.tsx';
-import Login from './pages/Login.tsx';
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        index: true,
-        element: <Board />
-      }, 
-      {
-        path: '/edit',
-        element: <EditTicket />
-      },
-      {
-        path: '/create',
-        element: <CreateTicket />
-      },
-      {
-        path: '/login',
-        element: <Login />
-      }
-    ]
-  }
-])
-
-const rootElement = document.getElementById('root');
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(<RouterProvider router={router} />);
-}
+ReactDOM.render(
+  <Router>
+    <Routes>
+      <Route path="/" element={<App />}>
+        <Route index element={<Board />} />
+        <Route path="create" element={<CreateTicket />} />
+        <Route path="edit/:id" element={<EditTicket />} />
+        <Route path="login" element={<Login />} />
+        <Route path="*" element={<ErrorPage />} />
+      </Route>
+    </Routes>
+  </Router>,
+  document.getElementById('root')
+);

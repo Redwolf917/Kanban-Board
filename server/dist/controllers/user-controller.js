@@ -1,5 +1,6 @@
 import { User } from '../models/user.js';
-export const getAllUsers = async (_, res) => {
+// Get all users
+export const getAllUsers = async (_req, res) => {
     try {
         const users = await User.find({}, '-password'); // Exclude passwords
         res.json(users);
@@ -13,6 +14,7 @@ export const getAllUsers = async (_, res) => {
         }
     }
 };
+// Get a user by ID
 export const getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id, '-password');
@@ -31,6 +33,7 @@ export const getUserById = async (req, res) => {
         }
     }
 };
+// Create a user
 export const createUser = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -46,6 +49,28 @@ export const createUser = async (req, res) => {
         }
     }
 };
+// Update a user
+export const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = req.body;
+        const updatedUser = await User.findByIdAndUpdate(id, updatedData, { new: true });
+        if (!updatedUser) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+        res.json(updatedUser);
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: 'An unexpected error occurred' });
+        }
+    }
+};
+// Delete a user
 export const deleteUser = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);

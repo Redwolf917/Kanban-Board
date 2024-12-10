@@ -6,116 +6,126 @@ import { UserData } from '../interfaces/UserData';
 import { retrieveUsers } from '../api/userAPI';
 
 const CreateTicket = () => {
-  const [newTicket, setNewTicket] = useState<TicketData | undefined>(
-    {
-      id: 0,
-      name: '',
-      description: '',
-      status: 'Todo',
-      assignedUserId: 1,
-      assignedUser: null
-    }
-  );
+  const [newTicket, setNewTicket] = useState<TicketData>({
+    id: 0,
+    name: '',
+    description: '',
+    status: 'Todo',
+    assignedUserId: undefined, // Corrected to undefined instead of null
+    assignedUser: null,
+  });
 
+  const [users, setUsers] = useState<UserData[]>([]);
   const navigate = useNavigate();
 
-  const [users, setUsers] = useState<UserData[] | undefined>([]);
-
-  const getAllUsers = async () => {
-    try {
-      const data = await retrieveUsers();
-      setUsers(data);
-    } catch (err) {
-      console.error('Failed to retrieve user info', err);
-    }
-  };
-
+  // Fetch all users
   useEffect(() => {
-    getAllUsers();
+    const fetchUsers = async () => {
+      try {
+        const data = await retrieveUsers();
+        setUsers(data);
+
+        // Set the first user as the default
+        if (data.length > 0) {
+          setNewTicket((prev) => ({
+            ...prev,
+            assignedUserId: data[0].id, // Default to the first user
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to retrieve user info', err);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (newTicket){
-      const data = await createTicket(newTicket);
-      console.log(data);
-      navigate('/');
-    }
-  }
-
-  const handleTextAreaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  // Handle input changes for form fields
+  const handleInputChange = (
+    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setNewTicket((prev) => (prev ? { ...prev, [name]: value } : undefined));
+    setNewTicket((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewTicket((prev) => (prev ? { ...prev, [name]: value } : undefined));
-  }
+  // Handle form submission
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
 
-  const handleUserChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewTicket((prev) => (prev ? { ...prev, [name]: value } : undefined));
-  }
+    if (!newTicket.assignedUserId) {
+      console.error('Assigned User ID is missing');
+      alert('Please select a user to assign the ticket to.');
+      return;
+    }
+
+    const ticketToSubmit = {
+      ...newTicket,
+      assignedUserId: parseInt(newTicket.assignedUserId?.toString() || '0', 10), // Ensure it’s a valid number
+    };
+
+    try {
+      const data = await createTicket(ticketToSubmit);
+      console.log('Ticket created successfully:', data);
+      navigate('/');
+    } catch (err) {
+      console.error('Failed to create ticket:', err);
+    }
+  };
 
   return (
-    <>
-      <div className='form-container'>
-        <form className='form' onSubmit=
-        {handleSubmit}>
-          <h1>Create Ticket</h1>
-          <label htmlFor='tName'>Ticket Name</label>
-          <textarea 
-            id='tName'
-            name='name'
-            value={newTicket?.name || ''}
-            onChange={handleTextAreaChange}
-            />
-          <label htmlFor='tStatus'>Ticket Status</label>
-          <select 
-            name='status' 
-            id='tStatus'
-            value={newTicket?.status || ''}
-            onChange={handleTextChange}
-          >
-            <option value='Todo'>Todo</option>
-            <option value='In Progress'>In Progress</option>
-            <option value='Done'>Done</option>
-          </select>
-          <label htmlFor='tDescription'>Ticket Description</label>
-          <textarea 
-            id='tDescription'
-            name='description'
-            value={newTicket?.description || ''}
-            onChange={handleTextAreaChange}
-          />
-          <label htmlFor='tUserId'>Assigned User</label>
-          <select
-            name='assignedUserId'
-            value={newTicket?.assignedUserId || ''}
-            onChange={handleUserChange}
-          >
-            {users ? users.map((user) => {
-              return (
-                <option key={user.id} value={String(user.id)}>
-                  {user.username}
-                </option>
-              )
-            }) : (
-            <textarea 
-              id='tUserId'
-              name='assignedUserId'
-              value={newTicket?.assignedUserId || 0}
-              onChange={handleTextAreaChange}
-            />
-            )
-          }
-          </select>
-          <button type='submit' onSubmit={handleSubmit}>Create</button>
-        </form>
-      </div>
-    </>
-  )
+    <div className="form-container">
+      <form className="form" onSubmit={handleSubmit}>
+        <h1>Create Ticket</h1>
+
+        <label htmlFor="tName">Ticket Name</label>
+        <textarea
+          id="tName"
+          name="name"
+          value={newTicket.name || ''}
+          onChange={handleInputChange}
+        />
+
+        <label htmlFor="tStatus">Ticket Status</label>
+        <select
+          name="status"
+          id="tStatus"
+          value={newTicket.status || ''}
+          onChange={handleInputChange}
+        >
+          <option value="Todo">Todo</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Done">Done</option>
+        </select>
+
+        <label htmlFor="tDescription">Ticket Description</label>
+        <textarea
+          id="tDescription"
+          name="description"
+          value={newTicket.description || ''}
+          onChange={handleInputChange}
+        />
+
+        <label htmlFor="tUserId">Assigned User</label>
+        <select
+          name="assignedUserId"
+          id="tUserId"
+          value={newTicket.assignedUserId?.toString() || ''}
+          onChange={handleInputChange}
+        >
+          <option value="" disabled>
+            Select a user
+          </option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id?.toString()}>
+              {user.username}
+            </option>
+          ))}
+        </select>
+
+        <button type="submit">Create</button>
+      </form>
+    </div>
+  );
 };
 
 export default CreateTicket;

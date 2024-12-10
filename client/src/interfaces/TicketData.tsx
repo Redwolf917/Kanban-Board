@@ -1,10 +1,10 @@
-import { UserData } from './UserData';
+import { UserData } from './UserData'; // Make sure this path is correct
 
 export interface TicketData {
-  id: number | null;
-  name: string | null;
-  description: string | null;
-  status: string | null;
-  assignedUserId: number | null;
-  assignedUser: UserData | null;
+  id: number;
+  name: string;
+  description: string;
+  status: string;
+  assignedUserId?: number; // Use undefined for optional fields
+  assignedUser: UserData | null; // Use UserData here
 }

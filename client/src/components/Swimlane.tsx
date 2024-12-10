@@ -1,35 +1,25 @@
-import TicketCard from './TicketCard';
+import React from 'react';
 import { TicketData } from '../interfaces/TicketData';
+import TicketCard from './TicketCard';
 import { ApiMessage } from '../interfaces/ApiMessage';
 
+// Define the props interface
 interface SwimlaneProps {
-  title: string;
-  tickets: TicketData[];
-  deleteTicket: (ticketId: number) => Promise<ApiMessage>
+  title: string; // Title for the status (e.g., 'Todo', 'In Progress', 'Done')
+  tickets: TicketData[]; // List of tickets for the swimlane
+  deleteTicket: (ticketId: number) => Promise<ApiMessage>; // Function to delete a ticket
 }
 
-const Swimlane = ({ title, tickets, deleteTicket }: SwimlaneProps) => {
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'Todo':
-        return 'swim-lane todo';
-      case 'In Progress':
-        return 'swim-lane inprogress';
-      case 'Done':
-        return 'swim-lane done';
-      default:
-        return 'swim-lane';
-    }
-  };
-
+const Swimlane: React.FC<SwimlaneProps> = ({ title, tickets, deleteTicket }) => {
   return (
-    <div className={`swimlane ${getStatusClass(title)}`}>
-      <h2>{title}</h2>
-      {tickets.map(ticket => (
-        <TicketCard 
-          key={ticket.id}
+    <div className="swimlane">
+      <h2>{title}</h2> {/* Display the title for the status */}
+      {/* Render tickets in this swimlane */}
+      {tickets.map((ticket, index) => (
+        <TicketCard
+          key={ticket.id ?? `ticket-${index}`} // Ensure the key is unique
           ticket={ticket}
-          deleteTicket={deleteTicket}
+          onDelete={deleteTicket} // Pass the delete function to TicketCard
         />
       ))}
     </div>

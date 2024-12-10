@@ -1,35 +1,26 @@
-import { Link } from 'react-router-dom';
-
-import { TicketData } from '../interfaces/TicketData';
-import { ApiMessage } from '../interfaces/ApiMessage';
-import { MouseEventHandler } from 'react';
+import { FC } from 'react';
 
 interface TicketCardProps {
-  ticket: TicketData;
-  deleteTicket: (ticketId: number) => Promise<ApiMessage>
+  ticket: {
+    id: number;
+    name: string;
+    status: string;
+    description: string;
+  };
+  onDelete: (ticketId: number) => void; // Accept delete function as a prop
 }
 
-const TicketCard = ({ ticket, deleteTicket }: TicketCardProps) => {
-
-  const handleDelete: MouseEventHandler<HTMLButtonElement> = async (event) => {
-    const ticketId = Number(event.currentTarget.value);
-    if (!isNaN(ticketId)) {
-      try {
-        const data = await deleteTicket(ticketId);
-        return data;
-      } catch (error) {
-        console.error('Failed to delete ticket:', error);
-      }
-    }
+const TicketCard: FC<TicketCardProps> = ({ ticket, onDelete }) => {
+  const handleDeleteClick = () => {
+    onDelete(ticket.id); // Call the passed delete function with ticket ID
   };
 
   return (
-    <div className='ticket-card'>
+    <div className="ticket-card">
       <h3>{ticket.name}</h3>
       <p>{ticket.description}</p>
-      <p>{ticket.assignedUser?.username}</p>
-      <Link to='/edit' state={{id: ticket.id}} type='button' className='editBtn'>Edit</Link>
-      <button type='button' value={String(ticket.id)} onClick={handleDelete} className='deleteBtn'>Delete</button>
+      <p>Status: {ticket.status}</p>
+      <button onClick={handleDeleteClick}>Delete</button> {/* Delete button */}
     </div>
   );
 };
